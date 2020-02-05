@@ -1,7 +1,10 @@
 # StableMatching
 algorithms in stable matchings
 
-```galeshaply_all.py <n> <seed>```
+```
+galeshaply_all.py <n> <seed>
+```
+
 This program can be used for :
 - Generating random preference list for n men n women
 - Generating all possible stable matchings for this preference list
