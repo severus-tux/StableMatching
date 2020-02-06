@@ -3,6 +3,7 @@ import sys
 import copy
 import matplotlib.pyplot as plt
 import networkx as nx 
+from networkx.drawing.nx_agraph import graphviz_layout
 
 no_fig=0
 
@@ -42,25 +43,25 @@ class MarriageMatchingInstance:
 			self.people.append(x)
 			self.matching.append(-1)
 		for x in self.people:
-			self.men_lists.append(nr.permutation(self.people).tolist())
-			self.women_lists.append(nr.permutation(self.people).tolist())
-			# self.men_lists = [  [4,6,0,1,5,7,3,2],
-			# 					[1,2,6,4,3,0,7,5],
-			# 					[7,4,0,3,5,1,2,6],
-			# 					[2,1,6,3,0,5,7,4],
-			# 					[6,1,4,0,2,5,7,3],
-			# 					[0,5,6,4,7,3,1,2],
-			# 					[1,4,6,5,2,3,7,0],
-			# 					[2,7,3,4,6,1,5,0]]
+			# self.men_lists.append(nr.permutation(self.people).tolist())
+			# self.women_lists.append(nr.permutation(self.people).tolist())
+			self.men_lists = [  [4,6,0,1,5,7,3,2],
+								[1,2,6,4,3,0,7,5],
+								[7,4,0,3,5,1,2,6],
+								[2,1,6,3,0,5,7,4],
+								[6,1,4,0,2,5,7,3],
+								[0,5,6,4,7,3,1,2],
+								[1,4,6,5,2,3,7,0],
+								[2,7,3,4,6,1,5,0]]
 
-			# self.women_lists = [[4,2,6,5,0,1,7,3],
-			# 					[7,5,2,4,6,1,0,3],
-			# 					[0,4,5,1,3,7,6,2],
-			# 					[7,6,2,1,3,0,4,5],
-			# 					[5,3,6,2,7,0,1,4],
-			# 					[1,7,4,2,3,5,6,0],
-			# 					[6,4,1,0,7,5,3,2],
-			# 					[6,3,0,4,1,2,5,7]]
+			self.women_lists = [[4,2,6,5,0,1,7,3],
+								[7,5,2,4,6,1,0,3],
+								[0,4,5,1,3,7,6,2],
+								[7,6,2,1,3,0,4,5],
+								[5,3,6,2,7,0,1,4],
+								[1,7,4,2,3,5,6,0],
+								[6,4,1,0,7,5,3,2],
+								[6,3,0,4,1,2,5,7]]
 	
 	def printlists(self):
 		print("\nMens List:\n")
@@ -72,6 +73,7 @@ class MarriageMatchingInstance:
 			print(i,"->",self.women_lists[i])
 
 	def findCycle(self,Mz):
+		self.cycles=[]
 		if(self.edges_populated == False):
 			self.populate_edges(Mz)
 
@@ -207,6 +209,108 @@ def ext_gale_shaply(M_problem_instance,optimal="men"):
 
 	return M
 
+def drawLattice(MO,WO):
+	MO.findCycle(WO)
+	WO.findCycle(WO)
+
+	v = 0 #vertex number
+	cycle_number = 0 #cycle number
+	vertex_level_dict = dict()  # int(v) -> int(l) level
+	matching_vertex_dict = dict() # tuple(1,2,3) -> int(v)
+	cycle_label_dict = dict() # [1,2,3] -> 1
+	edge_cycle_dict = dict() # (1,2) -> "R1"
+	lattice_edges = []
+
+	lattice_levels = [] # (M,i) in lattice levets => M is in ith level of lattice
+	lattice_levels.append((MO,0))
+	ll = copy.deepcopy(lattice_levels)
+
+	matching_vertex_dict[tuple(MO.matching)] = v
+	vertex_level_dict[v]=0
+	v=v+1
+
+	print( matching_vertex_dict[tuple(MO.matching)] )
+
+	while lattice_levels:
+		(M,l) = lattice_levels.pop(0)
+
+		#if(M.matching==WO.matching):
+			#print(l)
+		M.findCycle(WO)
+		for c in range(len(M.cycles)):
+
+			if(tuple(M.cycles[c]) not in cycle_label_dict):
+
+				tup = copy.deepcopy(tuple(M.cycles[c]))
+				#Adding all rotations of the  givem cycle, ex: (1,2,3),(2,3,1),(3,1,2)
+				rot = list(tup)
+				for i in tup:
+					cycle_label_dict[tuple(rot)] = "ρ"+str(cycle_number)
+					rot.append(rot.pop(0))
+				cycle_number = cycle_number + 1
+
+			print(cycle_label_dict)
+
+			Mc = M.removeCycle(WO,c)
+			
+			#To remove redudency, remove duplicates in the list
+			if(len(lattice_levels)==0):
+				lattice_levels.append((Mc,l+1))
+				ll.append((Mc,l+1))
+			else:
+				if((lattice_levels[-1][0].matching,lattice_levels[-1][1]) != (Mc.matching,l+1)): #Dont compare Objects, They would be two different copies of the same matchings
+					lattice_levels.append((Mc,l+1))
+					ll.append((Mc,l+1))
+
+			if tuple(Mc.matching) not in matching_vertex_dict:
+				matching_vertex_dict[tuple(Mc.matching)] = v
+				vertex_level_dict[v]=l+1
+				v=v+1
+			
+			parent = matching_vertex_dict[tuple(M.matching)]
+			child = matching_vertex_dict[tuple(Mc.matching)]
+
+			lattice_edges.append((parent,child))
+			edge_cycle_dict[(parent,child)] = cycle_label_dict[tuple(M.cycles[c])]
+
+	#Now dwaring
+	global no_fig
+	G = nx.DiGraph()
+	G.add_edges_from(lattice_edges)
+	no_fig = no_fig+1
+	plt.figure(no_fig)
+	# # plt.ion()			# self.men_lists.append(nr.permutation(self.people).tolist())
+			# self.women_lists.append(nr.permutation(self.people).tolist())
+
+	# # pos = nx.spring_layout(G)
+	# nx.draw_networkx(G, with_label = True)#,connectionstyle='arc3, rad=0.2') #pos = nx.random_layout(G),
+
+	# nx.draw(G, pos=graphviz_layout(G), node_size=1600, cmap=plt.cm.Blues,
+ #        node_color=range(len(G)),
+ #        prog='dot')
+	pos = graphviz_layout(G)
+	nx.draw_networkx(G, with_label=True,arrows=True,pos=pos,node_size=500,node_color='#ff5733')# , cmap=plt.cm.Blues,node_color=range(len(G)),prog='dot'
+	nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_cycle_dict,font_color='black')
+	plt.show()
+
+	# print(matching_vertex_dict)
+	# print(vertex_level_dict)
+	print(lattice_edges)
+
+	####################################################
+	lattice_levels = ll
+	Mu = {x[0] for x in lattice_levels}
+	Mu_matching = {tuple(x.matching) for x in Mu}
+	print("Total number of matchings: ",len(Mu_matching))
+
+	################del#############
+	mt = [[x for x in list(i)] for i in Mu_matching]
+	print(*mt,sep="\n")
+
+	# ################del#############
+	#####################################################	
+
+
 def main():
 	
 	n = int(sys.argv[1])
@@ -230,30 +334,31 @@ def main():
 	WO.findCycle(WO)
 
 
+	drawLattice(MO,WO)
 
-	lattice_levels = [] # (M,i) in lattice levets => M is in ith level of lattice
-	lattice_levels.append((MO,0))
-	ll = copy.deepcopy(lattice_levels)
+	# lattice_levels = [] # (M,i) in lattice levets => M is in ith level of lattice
+	# lattice_levels.append((MO,0))
+	# ll = copy.deepcopy(lattice_levels)
 
-	while lattice_levels:
-		(M,l) = lattice_levels.pop(0)
-		if(M.matching==WO.matching):
-			print(l)
-		M.findCycle(WO)
-		for c in range(len(M.cycles)):
-			Mc = M.removeCycle(WO,c)
-			lattice_levels.append((Mc,l+1))
-			ll.append((Mc,l+1))
+	# while lattice_levels:
+	# 	(M,l) = lattice_levels.pop(0)
+	# 	if(M.matching==WO.matching):
+	# 		print(l)
+	# 	M.findCycle(WO)
+	# 	for c in range(len(M.cycles)):
+	# 		Mc = M.removeCycle(WO,c)
+	# 		lattice_levels.append((Mc,l+1))
+	# 		ll.append((Mc,l+1))
 
-	lattice_levels = ll
-	Mu = {x[0] for x in lattice_levels}
-	Mu_matching = {tuple(x.matching) for x in Mu}
-	print("Total number of matchings: ",len(Mu_matching))
+	# lattice_levels = ll
+	# Mu = {x[0] for x in lattice_levels}
+	# Mu_matching = {tuple(x.matching) for x in Mu}
+	# print("Total number of matchings: ",len(Mu_matching))
 
-	################del#############
-	mt = [[x for x in list(i)] for i in Mu_matching]
-	print(*mt,sep="\n")
-	################del#############
+	# ################del#############
+	# mt = [[x for x in list(i)] for i in Mu_matching]
+	# print(*mt,sep="\n")
+	# ################del#############
 
 if __name__ == "__main__":
     main()
