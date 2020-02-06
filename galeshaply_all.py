@@ -4,6 +4,8 @@ import copy
 import matplotlib.pyplot as plt
 import networkx as nx 
 from networkx.drawing.nx_agraph import graphviz_layout
+from networkx.drawing.nx_agraph import pygraphviz_layout
+
 
 no_fig=0
 
@@ -229,7 +231,7 @@ def drawLattice(MO,WO):
 	vertex_level_dict[v]=0
 	v=v+1
 
-	print( matching_vertex_dict[tuple(MO.matching)] )
+	# print( matching_vertex_dict[tuple(MO.matching)] )
 
 	while lattice_levels:
 		(M,l) = lattice_levels.pop(0)
@@ -249,7 +251,7 @@ def drawLattice(MO,WO):
 					rot.append(rot.pop(0))
 				cycle_number = cycle_number + 1
 
-			print(cycle_label_dict)
+			# print(cycle_label_dict)
 
 			Mc = M.removeCycle(WO,c)
 			
@@ -288,27 +290,26 @@ def drawLattice(MO,WO):
 	# nx.draw(G, pos=graphviz_layout(G), node_size=1600, cmap=plt.cm.Blues,
  #        node_color=range(len(G)),
  #        prog='dot')
-	pos = graphviz_layout(G)
+	pos = pygraphviz_layout(G,prog='dot')
 	nx.draw_networkx(G, with_label=True,arrows=True,pos=pos,node_size=500,node_color='#ff5733')# , cmap=plt.cm.Blues,node_color=range(len(G)),prog='dot'
-	nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_cycle_dict,font_color='black')
-	plt.show()
+	nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_cycle_dict,font_color='black',label_pos=0.5)
+	# plt.show()
 
 	# print(matching_vertex_dict)
 	# print(vertex_level_dict)
-	print(lattice_edges)
+	# print(lattice_edges)
 
-	####################################################
-	lattice_levels = ll
-	Mu = {x[0] for x in lattice_levels}
-	Mu_matching = {tuple(x.matching) for x in Mu}
-	print("Total number of matchings: ",len(Mu_matching))
 
-	################del#############
-	mt = [[x for x in list(i)] for i in Mu_matching]
-	print(*mt,sep="\n")
+	
+	print("Total number of matchings: ",len(matching_vertex_dict))	
+	
 
-	# ################del#############
-	#####################################################	
+	for i in matching_vertex_dict:
+		print(matching_vertex_dict[i],"->",i)
+
+
+	# print(cycle_label_dict)
+	plt.show()	
 
 
 def main():
