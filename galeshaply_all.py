@@ -337,29 +337,6 @@ def main():
 
 	drawLattice(MO,WO)
 
-	# lattice_levels = [] # (M,i) in lattice levets => M is in ith level of lattice
-	# lattice_levels.append((MO,0))
-	# ll = copy.deepcopy(lattice_levels)
-
-	# while lattice_levels:
-	# 	(M,l) = lattice_levels.pop(0)
-	# 	if(M.matching==WO.matching):
-	# 		print(l)
-	# 	M.findCycle(WO)
-	# 	for c in range(len(M.cycles)):
-	# 		Mc = M.removeCycle(WO,c)
-	# 		lattice_levels.append((Mc,l+1))
-	# 		ll.append((Mc,l+1))
-
-	# lattice_levels = ll
-	# Mu = {x[0] for x in lattice_levels}
-	# Mu_matching = {tuple(x.matching) for x in Mu}
-	# print("Total number of matchings: ",len(Mu_matching))
-
-	# ################del#############
-	# mt = [[x for x in list(i)] for i in Mu_matching]
-	# print(*mt,sep="\n")
-	# ################del#############
 
 if __name__ == "__main__":
     main()
