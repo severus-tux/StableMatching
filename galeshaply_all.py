@@ -278,13 +278,18 @@ def drawLattice(MO,WO):
 	#Now dwaring
 	global no_fig
 	G = nx.DiGraph()
-	G.add_edges_from(lattice_edges)
+	G.add_edges_from(lattice_edges)#,length=30,minlen=50)
+
+
+
 	no_fig = no_fig+1
-	plt.figure(no_fig)
+	fig = plt.figure(no_fig)
+	fig.tight_layout()
 	# plt.ion()
-	pos = pygraphviz_layout(G,prog='dot')
-	nx.draw_networkx(G, with_label=True,arrows=True,pos=pos,node_size=500,node_color='#ff5733')# , cmap=plt.cm.Blues,node_color=range(len(G)),prog='dot'
-	nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_cycle_dict,font_color='black',label_pos=0.5)
+	pos = graphviz_layout(G,prog='dot')
+	nx.draw_networkx(G, with_label=True,arrows=True,pos=pos,node_size=300,font_size=9,node_color='#ff5733')#ff5733 , cmap=plt.cm.Blues,node_color=range(len(G)),prog='dot'
+	nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_cycle_dict,font_color='black',
+		font_size=9,rotate=False,label_pos=0.6)
 	# plt.show()
 
 	# print(matching_vertex_dict)
@@ -299,6 +304,18 @@ def drawLattice(MO,WO):
 	for i in matching_vertex_dict:
 		print(matching_vertex_dict[i],"->",i)
 
+	print("Rotations: \n")
+	label_cycle_dict = { v: k for k,v in cycle_label_dict.items()} #Inverting the dictionary
+	for i in label_cycle_dict:
+		print(i,"->",label_cycle_dict[i])
+
+	#To make it tight_layout
+	def on_resize(event):
+		fig.tight_layout()
+		fig.canvas.draw()
+
+	cid = fig.canvas.mpl_connect('resize_event', on_resize)
+	#Dont remove above code
 
 	# print(cycle_label_dict)
 	plt.show()	
@@ -326,6 +343,7 @@ def main():
 	MO.findCycle(WO)
 	WO.findCycle(WO)
 
+	MO.printlists()
 
 	drawLattice(MO,WO)
 
