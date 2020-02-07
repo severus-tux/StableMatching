@@ -281,15 +281,7 @@ def drawLattice(MO,WO):
 	G.add_edges_from(lattice_edges)
 	no_fig = no_fig+1
 	plt.figure(no_fig)
-	# # plt.ion()			# self.men_lists.append(nr.permutation(self.people).tolist())
-			# self.women_lists.append(nr.permutation(self.people).tolist())
-
-	# # pos = nx.spring_layout(G)
-	# nx.draw_networkx(G, with_label = True)#,connectionstyle='arc3, rad=0.2') #pos = nx.random_layout(G),
-
-	# nx.draw(G, pos=graphviz_layout(G), node_size=1600, cmap=plt.cm.Blues,
- #        node_color=range(len(G)),
- #        prog='dot')
+	# plt.ion()
 	pos = pygraphviz_layout(G,prog='dot')
 	nx.draw_networkx(G, with_label=True,arrows=True,pos=pos,node_size=500,node_color='#ff5733')# , cmap=plt.cm.Blues,node_color=range(len(G)),prog='dot'
 	nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_cycle_dict,font_color='black',label_pos=0.5)
