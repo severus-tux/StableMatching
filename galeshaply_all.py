@@ -233,6 +233,9 @@ def drawLattice(MO,WO):
 
 	# print( matching_vertex_dict[tuple(MO.matching)] )
 
+	visited_vertices = set()
+	visited_vertices.add(hash(tuple(MO.matching)))
+
 	while lattice_levels:
 		(M,l) = lattice_levels.pop(0)
 
@@ -256,13 +259,10 @@ def drawLattice(MO,WO):
 			Mc = M.removeCycle(WO,c)
 			
 			#To remove redudency, remove duplicates in the list
-			if(len(lattice_levels)==0):
+			if( hash(tuple(Mc.matching)) not in visited_vertices):
 				lattice_levels.append((Mc,l+1))
 				ll.append((Mc,l+1))
-			else:
-				if((lattice_levels[-1][0].matching,lattice_levels[-1][1]) != (Mc.matching,l+1)): #Dont compare Objects, They would be two different copies of the same matchings
-					lattice_levels.append((Mc,l+1))
-					ll.append((Mc,l+1))
+
 
 			if tuple(Mc.matching) not in matching_vertex_dict:
 				matching_vertex_dict[tuple(Mc.matching)] = v
