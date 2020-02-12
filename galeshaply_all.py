@@ -1,5 +1,4 @@
 import numpy.random as nr
-import random
 import numpy as np
 import sys
 import copy
@@ -51,27 +50,15 @@ class MarriageMatchingInstance:
 				self.men_lists.append(nr.permutation(self.people).tolist())
 				self.women_lists.append(nr.permutation(self.people).tolist())
 		else:
-			for x in self.people:
-				self.men_lists.append(nr.permutation(self.people).tolist())
-				self.women_lists.append(nr.permutation(self.people).tolist())
-			# self.men_lists = [  [4,6,0,1,5,7,3,2],
-			# 					[1,2,6,4,3,0,7,5],
-			# 					[7,4,0,3,5,1,2,6],
-			# 					[2,1,6,3,0,5,7,4],
-			# 					[6,1,4,0,2,5,7,3],
-			# 					[0,5,6,4,7,3,1,2],
-			# 					[1,4,6,5,2,3,7,0],
-			# 					[2,7,3,4,6,1,5,0]]
+			mens_firsts = list(nr.permutation(self.people))
+			womens_firsts = derangement(mens_firsts)
+			#Now inverting the derangement
+			womens_firsts = [womens_firsts.index(womens_firsts.index(i)) for i in womens_firsts]
 
-			# self.women_lists = [[4,2,6,5,0,1,7,3],
-			# 					[7,5,2,4,6,1,0,3],
-			# 					[0,4,5,1,3,7,6,2],
-			# 					[7,6,2,1,3,0,4,5],
-			# 					[5,3,6,2,7,0,1,4],
-			# 					[1,7,4,2,3,5,6,0],
-			# 					[6,4,1,0,7,5,3,2],
-			# 					[6,3,0,4,1,2,5,7]]
-	
+			for i in self.people:
+				self.men_lists.append([mens_firsts[i]]+nr.permutation(list(set(self.people)-{mens_firsts[i]})).tolist())
+				self.women_lists.append([womens_firsts[i]]+nr.permutation(list(set(self.people)-{womens_firsts[i]})).tolist())
+
 	def printlists(self):
 		print("\nMens List:\n")
 		for i in range(self.n):
@@ -80,6 +67,7 @@ class MarriageMatchingInstance:
 		print("\nWomens List:\n")
 		for i in range(self.n):
 			print(i,"->",self.women_lists[i])
+		print()
 
 	def findCycle(self,Mz):
 		self.cycles=[]
@@ -337,7 +325,7 @@ def random_derangement(n):
 	while True:
 		v = list(range(n))
 		for j in range(n - 1, -1, -1):
-			p = random.randint(0, j)
+			p = nr.randint(j+1)
 			if v[p] == j:
 				break
 			else:
@@ -355,15 +343,18 @@ def main():
 	
 	n = int(sys.argv[1])
 
-	if(len(sys.argv) == 3):
+	if(len(sys.argv) >= 3):
 		seed = int(sys.argv[2])
 	else:
 		seed = nr.randint(100000000)
-		print("seed:",seed)
+		print("seed1:",seed)
 
 	nr.seed(seed)
 
-	M = MarriageMatchingInstance(n,disjoint=False)
+	M = MarriageMatchingInstance(n,disjoint=True)
+
+	M.printlists()
+
 	MO = ext_gale_shaply(M,"men")
 	WO = ext_gale_shaply(M,"women")
 
@@ -376,11 +367,8 @@ def main():
 
 	MO.printlists()
 
-	#drawLattice(MO,WO)
+	drawLattice(MO,WO)
 	# break_all_continue_GS(MO,WO)
-
-	print(MO.matching)
-	print(derangement(MO.matching))
 
 if __name__ == "__main__":
 	main()
