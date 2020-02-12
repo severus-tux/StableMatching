@@ -1,4 +1,6 @@
 import numpy.random as nr
+import random
+import numpy as np
 import sys
 import copy
 import matplotlib.pyplot as plt
@@ -31,7 +33,7 @@ def dfs(u, marked, parent, adj):
 	return cycle
 
 class MarriageMatchingInstance:
-	def __init__(self, n):
+	def __init__(self, n, disjoint=False):
 		self.people = []
 		self.men_lists = []
 		self.women_lists = []
@@ -44,9 +46,14 @@ class MarriageMatchingInstance:
 		for x in range(n):
 			self.people.append(x)
 			self.matching.append(-1)
-		for x in self.people:
-			self.men_lists.append(nr.permutation(self.people).tolist())
-			self.women_lists.append(nr.permutation(self.people).tolist())
+		if disjoint==False :
+			for x in self.people:
+				self.men_lists.append(nr.permutation(self.people).tolist())
+				self.women_lists.append(nr.permutation(self.people).tolist())
+		else:
+			for x in self.people:
+				self.men_lists.append(nr.permutation(self.people).tolist())
+				self.women_lists.append(nr.permutation(self.people).tolist())
 			# self.men_lists = [  [4,6,0,1,5,7,3,2],
 			# 					[1,2,6,4,3,0,7,5],
 			# 					[7,4,0,3,5,1,2,6],
@@ -320,6 +327,29 @@ def drawLattice(MO,WO):
 	# print(cycle_label_dict)
 	plt.show()	
 
+def break_all_continue_GS(MO,WO):
+	men_edges = { (i,MO.matching[i]) for i in range(len(MO.matching))}
+	women_edges = { (i,WO.matching[i]) for i in range(len(WO.matching))}
+	if (len(men_edges.intersection(women_edges)) > 0 ):
+		print("Mz and Mo are not disjoint: ",men_edges.intersection(women_edges))
+
+def random_derangement(n):
+	while True:
+		v = list(range(n))
+		for j in range(n - 1, -1, -1):
+			p = random.randint(0, j)
+			if v[p] == j:
+				break
+			else:
+				v[j], v[p] = v[p], v[j]
+		else:
+			if v[0] != 0:
+				return tuple(v)
+
+def derangement(lst):
+	nr = random_derangement(len(lst))
+	dst = [lst[i] for i in nr]
+	return dst				
 
 def main():
 	
@@ -333,20 +363,24 @@ def main():
 
 	nr.seed(seed)
 
-	M = MarriageMatchingInstance(n)
+	M = MarriageMatchingInstance(n,disjoint=False)
 	MO = ext_gale_shaply(M,"men")
 	WO = ext_gale_shaply(M,"women")
 
 	print("MO: ",MO.matching)
 	print("WO: ",WO.matching)
+
 	
 	MO.findCycle(WO)
 	WO.findCycle(WO)
 
 	MO.printlists()
 
-	drawLattice(MO,WO)
+	#drawLattice(MO,WO)
+	# break_all_continue_GS(MO,WO)
 
+	print(MO.matching)
+	print(derangement(MO.matching))
 
 if __name__ == "__main__":
-    main()
+	main()
