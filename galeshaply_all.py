@@ -1,11 +1,15 @@
 import numpy.random as nr
 import numpy as np
 import sys
-import copy
+from copy import deepcopy
 import matplotlib.pyplot as plt
 import networkx as nx 
 from networkx.drawing.nx_agraph import graphviz_layout
 from networkx.drawing.nx_agraph import pygraphviz_layout
+
+#For generation of latin squares
+from sage.all import *
+from sage.combinat.matrices.latin import *
 
 
 no_fig=0
@@ -32,7 +36,7 @@ def dfs(u, marked, parent, adj):
 	return cycle
 
 class MarriageMatchingInstance:
-	def __init__(self, n, disjoint=False):
+	def __init__(self, n, disjoint=False,latin=False):
 		self.people = []
 		self.men_lists = []
 		self.women_lists = []
@@ -42,6 +46,7 @@ class MarriageMatchingInstance:
 		self.n = n
 		self.edges_populated = False
 		self.cycles_populated = False
+		self.disjoint=disjoint
 		for x in range(n):
 			self.people.append(x)
 			self.matching.append(-1)
@@ -50,14 +55,26 @@ class MarriageMatchingInstance:
 				self.men_lists.append(nr.permutation(self.people).tolist())
 				self.women_lists.append(nr.permutation(self.people).tolist())
 		else:
-			mens_firsts = list(nr.permutation(self.people))
-			womens_firsts = derangement(mens_firsts)
-			#Now inverting the derangement
-			womens_firsts = [womens_firsts.index(womens_firsts.index(i)) for i in womens_firsts]
+			if not latin:
+				mens_firsts = list(nr.permutation(self.people))
+				womens_firsts = derangement(mens_firsts)
+				#Now inverting the derangement
+				womens_firsts = [womens_firsts.index(womens_firsts.index(i)) for i in womens_firsts]
 
-			for i in self.people:
-				self.men_lists.append([mens_firsts[i]]+nr.permutation(list(set(self.people)-{mens_firsts[i]})).tolist())
-				self.women_lists.append([womens_firsts[i]]+nr.permutation(list(set(self.people)-{womens_firsts[i]})).tolist())
+				for i in self.people:
+					self.men_lists.append([mens_firsts[i]]+nr.permutation(list(set(self.people)-{mens_firsts[i]})).tolist())
+					self.women_lists.append([womens_firsts[i]]+nr.permutation(list(set(self.people)-{womens_firsts[i]})).tolist())
+			else:
+				# Generate a complete latin square uniformly at random
+				gen = LatinSquare_generator(back_circulant(n))
+				for i in range(20, 20+randint(1, 100)): next(gen)
+				temp = next(gen).list()
+				self.men_lists=[temp[i:i+n] for i in range(0,n*n,n)]
+
+				for i in range(20, 20+randint(1, 100)): next(gen)
+				temp = next(gen).list()
+				self.women_lists=[temp[i:i+n] for i in range(0,n*n,n)]
+
 
 	def printlists(self):
 		print("\nMens List:\n")
@@ -103,8 +120,8 @@ class MarriageMatchingInstance:
 		return 
 
 	def populate_edges(self,Mz):
-		curr_m = copy.deepcopy(self.matching)
-		women_opt_m = copy.deepcopy(Mz.matching)
+		curr_m = deepcopy(self.matching)
+		women_opt_m = deepcopy(Mz.matching)
 		self.edges=[]
 
 		for i in range(len(curr_m)): # i is man curr_m[i] is i's partner woman
@@ -150,10 +167,10 @@ class MarriageMatchingInstance:
 			print("\nNo such cycle!")
 			return self
 
-		c =  copy.deepcopy(self.cycles[cycle_no])
+		c =  deepcopy(self.cycles[cycle_no])
 		c_pts =[]
 
-		new_M = copy.deepcopy(self)
+		new_M = deepcopy(self)
 		new_M.cycles=[]
 		new_M.edges=[]
 		new_M.edges_populated=False
@@ -175,13 +192,13 @@ class MarriageMatchingInstance:
 
 def ext_gale_shaply(M_problem_instance,optimal="men"):
 	
-	M = copy.deepcopy(M_problem_instance)
+	M = deepcopy(M_problem_instance)
 	M.matching=[-1]*len(M.people)
 
 	if optimal=="women":
 		M.men_lists, M.women_lists = M.women_lists, M.men_lists
 		
-	unmatched = copy.deepcopy(M.people)
+	unmatched = deepcopy(M.people)
 
 	while len(unmatched)>0:
 		m = unmatched[0]
@@ -220,7 +237,7 @@ def drawLattice(MO,WO):
 
 	lattice_levels = [] # (M,i) in lattice levets => M is in ith level of lattice
 	lattice_levels.append((MO,0))
-	ll = copy.deepcopy(lattice_levels)
+	ll = deepcopy(lattice_levels)
 
 	matching_vertex_dict[tuple(MO.matching)] = v
 	vertex_level_dict[v]=0
@@ -241,7 +258,7 @@ def drawLattice(MO,WO):
 
 			if(tuple(M.cycles[c]) not in cycle_label_dict):
 
-				tup = copy.deepcopy(tuple(M.cycles[c]))
+				tup = deepcopy(tuple(M.cycles[c]))
 				#Adding all rotations of the  givem cycle, ex: (1,2,3),(2,3,1),(3,1,2)
 				rot = list(tup)
 				for i in tup:
@@ -270,6 +287,11 @@ def drawLattice(MO,WO):
 			lattice_edges.append((parent,child))
 			edge_cycle_dict[(parent,child)] = cycle_label_dict[tuple(M.cycles[c])]
 
+
+	break_continue_matchings = break_all_continue_GS(MO,WO)#returns tuple of lists
+	color = [ matching_vertex_dict[tuple(i)] for i in break_continue_matchings ]
+	print("color: ",color,)
+
 	#Now dwaring
 	global no_fig
 	G = nx.DiGraph()
@@ -297,7 +319,7 @@ def drawLattice(MO,WO):
 	
 
 	for i in matching_vertex_dict:
-		print(matching_vertex_dict[i],"->",i)
+		print("M"+str(matching_vertex_dict[i]),"->",i)
 
 	print("Rotations: \n")
 	label_cycle_dict = { v: k for k,v in cycle_label_dict.items()} #Inverting the dictionary
@@ -316,10 +338,43 @@ def drawLattice(MO,WO):
 	plt.show()	
 
 def break_all_continue_GS(MO,WO):
-	men_edges = { (i,MO.matching[i]) for i in range(len(MO.matching))}
-	women_edges = { (i,WO.matching[i]) for i in range(len(WO.matching))}
-	if (len(men_edges.intersection(women_edges)) > 0 ):
-		print("Mz and Mo are not disjoint: ",men_edges.intersection(women_edges))
+	if MO.disjoint == False:
+		return ()
+
+	def break_first_propose(M):
+		Mx = deepcopy(M)
+		Mx.matching = [-1]*M.n
+		#Mx is definatly disjoint, So everyone has seconf(m), no harm in deleting everyone's first
+		for i in Mx.people:
+			w = Mx.men_lists[i].pop(0)
+			Mx.women_lists[w].pop()
+
+
+		Nx = ext_gale_shaply(Mx,"men")
+		print("printing Nx matching before sending:", Nx.matching)
+		print("Nx lists")
+		Nx.printlists()
+		return Nx
+
+	M1 = deepcopy(MO)
+	break_continue_matchings=[M1]
+	flag = True # If there is interesection with WO, set False
+	
+	while flag:
+		M = break_first_propose(break_continue_matchings[-1])
+		interesection_M_WO = [M.matching[i] for i in range(M.n) if M.matching[i]==WO.matching[i]]
+
+		print(M.matching)
+		print(WO.matching)
+		print("intersection: ",interesection_M_WO)
+		if ( len(interesection_M_WO) == 0 ): #If there is interesection, list will be non empty
+			break_continue_matchings.append(M)
+			M.disjoint = True
+		else:
+			flag = False
+
+	print(len(break_continue_matchings))
+	return tuple([I.matching for I in break_continue_matchings])
 
 def random_derangement(n):
 	while True:
@@ -351,24 +406,44 @@ def main():
 
 	nr.seed(seed)
 
-	M = MarriageMatchingInstance(n,disjoint=True)
+	M = MarriageMatchingInstance(n,disjoint=True,latin=True)
 
-	M.printlists()
+	# M.printlists()
+	# M.printlists()
 
 	MO = ext_gale_shaply(M,"men")
 	WO = ext_gale_shaply(M,"women")
 
-	print("MO: ",MO.matching)
-	print("WO: ",WO.matching)
+	# # print("MO: ",MO.matching)
+	# # print("WO: ",WO.matching)
 
 	
-	MO.findCycle(WO)
-	WO.findCycle(WO)
+	# MO.findCycle(WO)
+	# WO.findCycle(WO)
 
-	MO.printlists()
+# 	# # MO.printlists()
 
-	drawLattice(MO,WO)
-	# break_all_continue_GS(MO,WO)
+# 	# drawLattice(MO,WO)
+# 	# # break_all_continue_GS(MO,WO)
+
+# ###################################
+	interesection_M_WO = [MO.matching[i] for i in range(MO.n) if MO.matching[i]==WO.matching[i]]
+	print(interesection_M_WO)
+	if interesection_M_WO:
+		pass
+	else:
+		print("Awesome")
+		MO.printlists()
+		for i in MO.people:
+			MO.men_lists[i].pop(0)
+			MO.women_lists[i].pop()
+		MO.matching = [-1]*MO.n
+		MO = ext_gale_shaply(MO,"men")
+		MO.printlists()
+
+###########TESTING##################
+
+###########TESTING##################
 
 if __name__ == "__main__":
 	main()
