@@ -288,9 +288,9 @@ def drawLattice(MO,WO):
 			edge_cycle_dict[(parent,child)] = cycle_label_dict[tuple(M.cycles[c])]
 
 
-	break_continue_matchings = break_all_continue_GS(MO,WO)#returns tuple of lists
-	color = [ matching_vertex_dict[tuple(i)] for i in break_continue_matchings ]
-	print("color: ",color,)
+	# break_continue_matchings = break_all_continue_GS(MO,WO)#returns tuple of lists
+	# color = [ matching_vertex_dict[tuple(i)] for i in break_continue_matchings ]
+	# print("color: ",color,)
 
 	#Now dwaring
 	global no_fig
@@ -418,12 +418,12 @@ def main():
 	# # print("WO: ",WO.matching)
 
 	
-	# MO.findCycle(WO)
-	# WO.findCycle(WO)
+# 	MO.findCycle(WO)
+# 	WO.findCycle(WO)
 
-# 	# # MO.printlists()
+# # 	# # MO.printlists()
 
-# 	# drawLattice(MO,WO)
+# 	drawLattice(MO,WO)
 # 	# # break_all_continue_GS(MO,WO)
 
 # ###################################
