@@ -51,9 +51,16 @@ class MarriageMatchingInstance:
 			self.people.append(x)
 			self.matching.append(-1)
 		if disjoint==False :
-			for x in self.people:
-				self.men_lists.append(nr.permutation(self.people).tolist())
-				self.women_lists.append(nr.permutation(self.people).tolist())
+			# for x in self.people:
+				# self.men_lists.append(nr.permutation(self.people).tolist())
+				# self.women_lists.append(nr.permutation(self.people).tolist())
+			self.men_lists = [  [0,1,2],
+								[1,2,0],
+								[2,0,1]]
+
+			self.women_lists = [[1,2,0],
+								[2,0,1],
+								[0,1,2]]
 		else:
 			if not latin:
 				mens_firsts = list(nr.permutation(self.people))
@@ -406,7 +413,7 @@ def main():
 
 	nr.seed(seed)
 
-	M = MarriageMatchingInstance(n,disjoint=True,latin=True)
+	M = MarriageMatchingInstance(n,disjoint=False,latin=False)
 
 	# M.printlists()
 	# M.printlists()
@@ -418,28 +425,28 @@ def main():
 	# # print("WO: ",WO.matching)
 
 	
-# 	MO.findCycle(WO)
-# 	WO.findCycle(WO)
+	MO.findCycle(WO)
+	WO.findCycle(WO)
 
-# # 	# # MO.printlists()
+# 	# # MO.printlists()
 
-# 	drawLattice(MO,WO)
+	drawLattice(MO,WO)
 # 	# # break_all_continue_GS(MO,WO)
 
 # ###################################
-	interesection_M_WO = [MO.matching[i] for i in range(MO.n) if MO.matching[i]==WO.matching[i]]
-	print(interesection_M_WO)
-	if interesection_M_WO:
-		pass
-	else:
-		print("Awesome")
-		MO.printlists()
-		for i in MO.people:
-			MO.men_lists[i].pop(0)
-			MO.women_lists[i].pop()
-		MO.matching = [-1]*MO.n
-		MO = ext_gale_shaply(MO,"men")
-		MO.printlists()
+	# interesection_M_WO = [MO.matching[i] for i in range(MO.n) if MO.matching[i]==WO.matching[i]]
+	# print(interesection_M_WO)
+	# if interesection_M_WO:
+	# 	pass
+	# else:
+	# 	print("Awesome")
+	# 	MO.printlists()
+	# 	for i in MO.people:
+	# 		MO.men_lists[i].pop(0)
+	# 		MO.women_lists[i].pop()
+	# 	MO.matching = [-1]*MO.n
+	# 	MO = ext_gale_shaply(MO,"men")
+	# 	MO.printlists()
 
 ###########TESTING##################
 
