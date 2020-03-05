@@ -433,7 +433,7 @@ def main():
 	drawLattice(MO,WO)
 # 	# # break_all_continue_GS(MO,WO)
 
-# ###################################
+#####################################
 	# interesection_M_WO = [MO.matching[i] for i in range(MO.n) if MO.matching[i]==WO.matching[i]]
 	# print(interesection_M_WO)
 	# if interesection_M_WO:
