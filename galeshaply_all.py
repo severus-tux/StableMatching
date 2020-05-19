@@ -62,25 +62,25 @@ class MarriageMatchingInstance:
 				womens_firsts = [womens_firsts.index(womens_firsts.index(i)) for i in womens_firsts]
 
 				for i in self.people:
-				    self.men_lists.append([mens_firsts[i]]+nr.permutation(list(set(self.people)-{mens_firsts[i]})).tolist())
-				    self.women_lists.append([womens_firsts[i]]+nr.permutation(list(set(self.people)-{womens_firsts[i]})).tolist())
+				    # self.men_lists.append([mens_firsts[i]]+nr.permutation(list(set(self.people)-{mens_firsts[i]})).tolist())
+				    # self.women_lists.append([womens_firsts[i]]+nr.permutation(list(set(self.people)-{womens_firsts[i]})).tolist())
 
-				# self.men_lists=[[6,0,7,5,2,3,4,1],
-				# 				[4,2,0,1,7,5,3,6],
-				# 				[0,3,2,4,5,1,7,6],
-				# 				[2,6,5,0,3,7,1,4],
-				# 				[3,2,0,1,5,6,7,4],
-				# 				[7,2,4,1,0,6,3,5],
-				# 				[5,2,7,4,6,3,0,1],
-				# 				[1,4,3,6,7,2,0,5]]
-				# self.women_lists=[[4,5,1,6,3,0,2,7],
-				# 					[1,7,3,4,6,0,5,2],
-				# 					[6,7,2,4,0,3,5,1],
-				# 					[5,2,6,1,3,7,4,0],
-				# 					[7,1,6,2,4,0,3,5],
-				# 					[2,3,5,4,1,0,7,6],
-				# 					[3,5,2,1,7,0,6,4],
-				# 					[0,6,4,1,5,3,2,7]]
+					self	.men_lists=[[6,0,7,5,2,3,4,1],
+									[4,2,0,1,7,5,3,6],
+									[0,3,2,4,5,1,7,6],
+									[2,6,5,0,3,7,1,4],
+									[3,2,0,1,5,6,7,4],
+									[7,2,4,1,0,6,3,5],
+									[5,2,7,4,6,3,0,1],
+									[1,4,3,6,7,2,0,5]]
+					self.women_lists=[[4,5,1,6,3,0,2,7],
+										[1,7,3,4,6,0,5,2],
+										[6,7,2,4,0,3,5,1],
+										[5,2,6,1,3,7,4,0],
+										[7,1,6,2,4,0,3,5],
+										[2,3,5,4,1,0,7,6],
+										[3,5,2,1,7,0,6,4],
+										[0,6,4,1,5,3,2,7]]
 			else:
 				# Generate a complete latin square uniformly at random
 				gen = LatinSquare_generator(back_circulant(n))
@@ -151,23 +151,24 @@ class MarriageMatchingInstance:
 		self.edges_populated = True
 		return 
 
-		def draw_HM(self,Mz):
-			if(self.edges_populated == False):
-				self.populate_edges(Mz)
-			if(self.cycles_populated == False):
-				self.findCycle()
+	def draw_HM(self,Mz):
+		if(self.edges_populated == False):
+			self.populate_edges(Mz)
+		if(self.cycles_populated == False):
+			self.findCycle()
 
-			G = nx.MultiDiGraph()
-			G.add_edges_from(M.edges)
-			global no_fig
-			no_fig = no_fig+1
-			#print(no_fig)
-			plt.figure(no_fig)
-			plt.ion()
-			# pos = nx.spring_layout(G)
-			nx.draw_networkx(G, with_label = True,connectionstyle='arc3, rad=0.2') #pos = nx.random_layout(G),
-			plt.show()
-			return
+		G = nx.MultiDiGraph()
+		G.add_edges_from(self.edges)
+		global no_fig
+		no_fig = no_fig+1
+		#print(no_fig)
+		plt.figure(no_fig)
+		plt.ion()
+		# pos = nx.spring_layout(G)
+		nx.draw_networkx(G, with_label = True,connectionstyle='arc3, rad=0.2') #pos = nx.random_layout(G),
+		plt.savefig('HM.png')
+		plt.show()
+		return
 
 
 	def removeCycle(self,Mz, cycle_no=0):
@@ -428,6 +429,7 @@ def main():
 	M.printlists()
 	# M.printlists()
 
+
 	MO = ext_gale_shaply(M,"men")
 	WO = ext_gale_shaply(M,"women")
 
@@ -440,7 +442,14 @@ def main():
 
 #   # # MO.printlists()
 
-	drawLattice(MO,WO)
+	#drawLattice(MO,WO)
+
+	MO.draw_HM(WO)
+
+
+	MO = ext_gale_shaply(MO,"men")
+	MO.printlists()
+
 #   # # break_all_continue_GS(MO,WO)
 
 #####################################
